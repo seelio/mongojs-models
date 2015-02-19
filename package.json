@@ -1,0 +1,27 @@
+{
+  "name": "mongojs-models",
+  "version": "0.0.1",
+  "description": "Lightweight MongoDB object modeling using MongoJS as backend API",
+  "author": {
+    "name": "Victor Kareh",
+    "email": "victor@seelio.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/seelio/mongojs-models.git"
+  },
+  "dependencies": {
+    "mongojs": "0.18.x",
+    "underscore": "1.7.x"
+  },
+  "engines": {
+    "node": "0.10.x"
+  },
+  "keywords": [
+    "db",
+    "mongo",
+    "mongodb",
+    "mongojs"
+  ]
+}
