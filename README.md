@@ -14,8 +14,7 @@ Example Usage
 
 ```javascript
 // Require libraries and initiate database connection
-var mongo = require('mongojs-models');
-var db = mongo(connectionString);
+var db = require('mongojs-models')(connectionString);
 
 // Define your schema
 var schema = new db.Schema({
@@ -23,18 +22,15 @@ var schema = new db.Schema({
   lastName: String
 });
 
-// Load your collection
-var Collection = db.collection('users');
-
-// Instantiate your Model class
-var User = new db.Model(Collection, schema);
+// Instantiate your Model class for the 'users' collection
+var User = new db.Model('users', schema);
 ```
 
 Now that your Model class is instantiated, you can use model prototype methods:
 
 ```javascript
 var user = new User({firstName: 'John', lastName: 'Doe'});
-user.save(function(err, user) { ... });
+user.save(function(err, savedUser) { ... });
 user.remove(function(err, wasRemoved) { ... });
 ```
 
