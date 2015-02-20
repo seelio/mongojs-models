@@ -84,4 +84,38 @@ describe('Model', function() {
       });
     });
   });
+
+  describe('events', function() {
+    before(function() {
+      test = new Test({foo: 'foobar', bar: 3});
+    });
+
+    it('should emit events', function(done) {
+      Test.on('foo', function(foo) {
+        expect(foo).to.equal('bar');
+        done()
+      });
+      Test.emit('foo', 'bar');
+    });
+
+    it('should listen to a document being saved', function(done) {
+      Test.on('save', function(doc) {
+        expect(doc).to.equal(test);
+        done();
+      });
+      test.save(function(err) {
+        if (err) return done(err);
+      });
+    });
+
+    it('should listen to a document being removed', function(done) {
+      Test.on('remove', function(doc) {
+        expect(doc).to.equal(test);
+        done();
+      });
+      test.remove(function(err) {
+        if (err) return done(err);
+      });
+    });
+  });
 });
