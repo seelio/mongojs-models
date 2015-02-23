@@ -25,4 +25,11 @@ describe('Schema', function() {
       expect(fields).to.include.members(['foo', 'bar', '_id']);
     });
   });
+
+  describe('#addField()', function() {
+    it('should add fields to an existing schema', function() {
+      schema.addField('baz', Boolean);
+      expect(schema.getFields()).to.include.members(['foo', 'bar', '_id', 'baz']);
+    });
+  });
 });

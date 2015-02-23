@@ -1,5 +1,5 @@
 var expect = require('chai').expect;
-var db = require('mongojs')('test');
+var db = require('mongojs')('mongojs-test');
 var Model = require('../lib/model.js')(db);
 var Schema = require('../lib/schema.js');
 
@@ -13,7 +13,7 @@ describe('Model', function() {
 
   it('should contain static collection methods', function() {
     expect(Test).to.contain.keys(['_name', 'find', 'findOne', 'save', 'remove']);
-    expect(Test._name).to.equal('test.test');
+    expect(Test._name).to.equal('mongojs-test.test');
     expect(Test.find).to.be.a.function;
   });
 
@@ -72,6 +72,19 @@ describe('Model', function() {
       });
     });
 
+    it('should only save fields defined in the schema', function(done) {
+      test.baz = 'FOOBARBAZ';
+      expect(test).to.contain.keys(['baz']);
+      test.save(function(err, sameTest) {
+        if (err) return done(err);
+        expect(sameTest).to.be.ok;
+        expect(sameTest).to.contain.keys(['foo', 'bar', '_id']);
+        expect(sameTest).to.not.contain.keys(['baz']);
+        expect(sameTest).to.equal(test);
+        done();
+      });
+    });
+
     it('should remove document from the collection', function(done) {
       test.remove(function(err, removed) {
         if (err) return done(err);
@@ -99,7 +112,7 @@ describe('Model', function() {
     });
 
     it('should listen to a document being saved', function(done) {
-      Test.on('save', function(doc) {
+      Test.once('save', function(doc) {
         expect(doc).to.equal(test);
         done();
       });
@@ -117,5 +130,47 @@ describe('Model', function() {
         if (err) return done(err);
       });
     });
+  });
+
+  describe('pre-save', function() {
+    before(function() {
+      test = new Test({foo: 'foo', bar: 4});
+    });
+
+    it('should run asynchronous functions prior to saving a document', function(done) {
+      Test.preSave(function(next) {
+        this.foo = this.foo.toUpperCase();
+        next();
+      });
+      Test.preSave(function(next) {
+        this.foo = this.foo + 'bar';
+        next();
+      });
+      test.save(function(err, afterSave) {
+        if (err) return done(err);
+        expect(afterSave).to.equal(test);
+        expect(afterSave.foo).to.equal('FOObar');
+        done();
+      });
+    });
+
+    it('should fail to save on error callback', function(done) {
+      Test.preSave(function(next) {
+        next(new Error('You shall not pass'));
+      });
+      Test.preSave(function(next) {
+        next(new Error('This should never be called'));
+      });
+      test.save(function(err, noSave) {
+        expect(err).to.be.an.instanceof(Error);
+        expect(err.message).to.equal('You shall not pass');
+        expect(noSave).to.not.be.ok;
+        done();
+      });
+    });
+  });
+
+  after(function(done) {
+    db.dropDatabase(done);
   });
 });
