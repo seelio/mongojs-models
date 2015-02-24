@@ -1,6 +1,6 @@
 {
   "name": "mongojs-models",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Lightweight MongoDB object modeling using MongoJS as backend API",
   "author": {
     "name": "Victor Kareh",
@@ -12,7 +12,8 @@
     "url": "git://github.com/seelio/mongojs-models.git"
   },
   "scripts": {
-    "test": "mocha -R spec"
+    "test": "mocha -R spec",
+    "coverage": "istanbul cover node_modules/mocha/bin/_mocha"
   },
   "dependencies": {
     "mongojs": "0.18.x",
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "chai": "~2.0.0",
+    "istanbul": "~0.3.6",
     "mocha": "~2.1.0"
   },
   "engines": {

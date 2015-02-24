@@ -19,32 +19,79 @@ describe('Model', function() {
 
   describe('static methods', function() {
     it('should save a new document to the collection', function(done) {
-      Test.save({foo: 'foo', bar: 1}, function(err, test) {
+      Test.save({foo: 'foo', bar: 1}, function(err, doc) {
         if (err) return done(err);
-        expect(test).to.be.an.instanceof(Test);
-        expect(test).to.contain.keys(['foo', 'bar', '_id']);
-        expect(test.foo).to.equal('foo');
-        expect(test.bar).to.equal(1);
-        expect(test._id).to.be.an.instanceof(db.ObjectId);
-        _id = test._id;
+        expect(doc).to.be.an.instanceof(Test);
+        expect(doc).to.contain.keys(['foo', 'bar', '_id']);
+        expect(doc.foo).to.equal('foo');
+        expect(doc.bar).to.equal(1);
+        expect(doc._id).to.be.an.instanceof(db.ObjectId);
+        test = doc;
         done();
       });
     });
 
     it('should find document from the collection', function(done) {
-      Test.findOne({_id: _id}, function(err, test) {
+      Test.findOne({_id: test._id}, function(err, doc) {
         if (err) return done(err);
-        expect(test).to.be.an.instanceof(Test);
-        expect(test).to.contain.keys(['foo', 'bar', '_id']);
-        expect(test.foo).to.equal('foo');
-        expect(test.bar).to.equal(1);
-        expect(test._id).to.be.an.instanceof(db.ObjectId);
+        expect(doc).to.be.an.instanceof(Test);
+        expect(doc).to.contain.keys(['foo', 'bar', '_id']);
+        expect(doc.foo).to.equal('foo');
+        expect(doc.bar).to.equal(1);
+        expect(doc._id).to.be.an.instanceof(db.ObjectId);
+        done();
+      });
+    });
+
+    it('should find and modify a document from the collection', function(done) {
+      Test.findAndModify({
+        query: {foo: 'foo'},
+        update: {$set: {foo: 'bar'}}
+      }, function(err, doc, response) {
+        if (err) return done(err);
+        expect(doc).to.be.ok;
+        expect(doc).to.be.an.instanceof(Test);
+        expect(doc).to.deep.equal(test);
+        expect(response).to.be.ok;
+        expect(response).to.contain.keys(['updatedExisting', 'n']);
+        expect(response.updatedExisting).to.be.true;
+        expect(response.n).to.equal(1);
+        done();
+      });
+    });
+
+    it('should try to find and upsert a new document', function(done) {
+      Test.findAndModify({
+        query: {foo: 'foo', bar: 2},
+        update: {$inc: {bar: 1}},
+        upsert: true,
+        new: true
+      }, function(err, doc, response) {
+        if (err) return done(err);
+        expect(doc).to.be.ok;
+        expect(doc).to.be.an.instanceof(Test);
+        expect(doc).to.contain.keys(['foo', 'bar', '_id']);
+        expect(doc.bar).to.equal(3);
+        expect(response).to.be.ok;
+        expect(response).to.contain.keys(['updatedExisting', 'n', 'upserted']);
+        expect(response.updatedExisting).to.be.false;
+        expect(response.n).to.equal(1);
+        expect(response.upserted).to.deep.equal(doc._id);
+        done();
+      });
+    });
+
+    it('should find multiple documents', function(done) {
+      Test.find({foo: {$ne: null}}, function(err, docs) {
+        if (err) return done(err);
+        expect(docs).to.be.an.instanceof(Array);
+        expect(docs[0]).to.be.an.instanceof(Test);
         done();
       });
     });
 
     it('should remove document from the collection', function(done) {
-      Test.remove({_id: _id}, function(err, removed) {
+      Test.remove({_id: test._id}, function(err, removed) {
         if (err) return done(err);
         expect(removed).to.have.keys('n');
         expect(removed.n).to.equal(1);
@@ -59,28 +106,37 @@ describe('Model', function() {
     });
 
     it('should save document to the collection', function(done) {
-      test.save(function(err, sameTest) {
+      test.save(function(err, doc) {
         if (err) return done(err);
-        expect(sameTest).to.be.ok;
-        expect(sameTest).to.equal(test);
-        Test.findOne({_id: test._id}, function(err, foundTest) {
+        expect(doc).to.be.ok;
+        expect(doc).to.equal(test);
+        Test.findOne({_id: test._id}, function(err, doc) {
           if (err) return done(err);
-          expect(foundTest).to.be.ok;
-          expect(foundTest._id.toString()).to.equal(test._id.toString());
+          expect(doc).to.be.ok;
+          expect(doc._id).to.deep.equal(test._id);
           done();
         });
       });
     });
 
+    it('should return a native Object version of the document', function() {
+      expect(test).to.contain.keys(['foo', 'bar', '_id']);
+      expect(test.save).to.be.an.instanceof(Function);
+      var obj = test.toJSON();
+      expect(obj).to.not.equal(test);
+      expect(obj).to.contain.keys(['foo', 'bar', '_id']);
+      expect(obj.save).to.not.be.an.instanceof(Function);
+    });
+
     it('should only save fields defined in the schema', function(done) {
       test.baz = 'FOOBARBAZ';
       expect(test).to.contain.keys(['baz']);
-      test.save(function(err, sameTest) {
+      test.save(function(err, doc) {
         if (err) return done(err);
-        expect(sameTest).to.be.ok;
-        expect(sameTest).to.contain.keys(['foo', 'bar', '_id']);
-        expect(sameTest).to.not.contain.keys(['baz']);
-        expect(sameTest).to.equal(test);
+        expect(doc).to.be.ok;
+        expect(doc).to.contain.keys(['foo', 'bar', '_id']);
+        expect(doc).to.not.contain.keys(['baz']);
+        expect(doc).to.equal(test);
         done();
       });
     });
@@ -89,9 +145,9 @@ describe('Model', function() {
       test.remove(function(err, removed) {
         if (err) return done(err);
         expect(removed).to.be.true;
-        Test.findOne({_id: _id}, function(err, foundTest) {
+        Test.findOne({_id: test._id}, function(err, doc) {
           if (err) return (err);
-          expect(foundTest).to.be.undefined;
+          expect(doc).to.be.undefined;
           done();
         });
       });
@@ -146,10 +202,10 @@ describe('Model', function() {
         this.foo = this.foo + 'bar';
         next();
       });
-      test.save(function(err, afterSave) {
+      test.save(function(err, doc) {
         if (err) return done(err);
-        expect(afterSave).to.equal(test);
-        expect(afterSave.foo).to.equal('FOObar');
+        expect(doc).to.equal(test);
+        expect(doc.foo).to.equal('FOObar');
         done();
       });
     });
@@ -161,10 +217,10 @@ describe('Model', function() {
       Test.preSave(function(next) {
         next(new Error('This should never be called'));
       });
-      test.save(function(err, noSave) {
+      test.save(function(err, doc) {
         expect(err).to.be.an.instanceof(Error);
         expect(err.message).to.equal('You shall not pass');
-        expect(noSave).to.not.be.ok;
+        expect(doc).to.not.be.ok;
         done();
       });
     });

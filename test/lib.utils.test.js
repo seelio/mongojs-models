@@ -29,6 +29,7 @@ describe('lib/utils.js', function() {
         if (err) return done(err);
         expect(modifiedDoc).to.be.ok;
         expect(modifiedDoc).to.equal(doc);
+        expect(modifiedDoc).to.equal(this);
         expect(modifiedDoc).to.contain.keys(['one', 'two', 'three']);
         expect(modifiedDoc.one).to.equal(1);
         expect(modifiedDoc.two).to.equal(2);
