@@ -1,5 +1,5 @@
 var expect = require('chai').expect;
-var db = require('mongojs')('mongojs-test');
+var db = require('mongojs')('mongojsom-test');
 var Model = require('../lib/model.js')(db);
 var Schema = require('../lib/schema.js');
 
@@ -13,7 +13,7 @@ describe('Model', function() {
 
   it('should contain static collection methods', function() {
     expect(Test).to.contain.keys(['_name', 'find', 'findOne', 'save', 'remove']);
-    expect(Test._name).to.equal('mongojs-test.test');
+    expect(Test._name).to.equal('mongojsom-test.test');
     expect(Test.find).to.be.a.function;
   });
 

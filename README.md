@@ -1,12 +1,12 @@
-MongoJS Models
-==============
+Mongo JavaScript Object Modeler
+===============================
 
-MongoJS Models is a lightweight MongoDB object modeling library for node.js. It
+MongoJSOM is a lightweight MongoDB object modeling library for node.js. It
 uses [mongojs](http://mafintosh.github.io/mongojs/) as backend API, and expands
 from there by providing classes for Models and Schemas.
 
 For basic usage, refer to the [mongojs](https://github.com/mafintosh/mongojs#usage)
-API documentation. In addition to the MongoDB API calls, MongoJS Models provides
+API documentation. In addition to the MongoDB API calls, MongoJSOM provides
 object modeling capabilities.
 
 Usage
@@ -14,7 +14,7 @@ Usage
 
 ```javascript
 // Require libraries and initiate database connection
-var db = require('mongojs-models')(connectionString);
+var db = require('mongojsom')(connectionString);
 
 // Define your schema
 var schema = new db.Schema({

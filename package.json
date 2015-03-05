@@ -1,5 +1,5 @@
 {
-  "name": "mongojs-models",
+  "name": "mongojsom",
   "version": "0.1.5",
   "description": "Lightweight MongoDB object modeling using MongoJS as backend API",
   "author": {
@@ -9,7 +9,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git://github.com/seelio/mongojs-models.git"
+    "url": "git://github.com/seelio/mongojsom.git"
   },
   "scripts": {
     "test": "mocha -R spec",
