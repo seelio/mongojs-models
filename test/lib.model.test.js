@@ -194,11 +194,11 @@ describe('Model', function() {
     });
 
     it('should run asynchronous functions prior to saving a document', function(done) {
-      Test.preSave(function(next) {
+      Test.pre('save', function(next) {
         this.foo = this.foo.toUpperCase();
         next();
       });
-      Test.preSave(function(next) {
+      Test.pre('save', function(next) {
         this.foo = this.foo + 'bar';
         next();
       });
@@ -211,10 +211,10 @@ describe('Model', function() {
     });
 
     it('should fail to save on error callback', function(done) {
-      Test.preSave(function(next) {
+      Test.pre('save', function(next) {
         next(new Error('You shall not pass'));
       });
-      Test.preSave(function(next) {
+      Test.pre('save', function(next) {
         next(new Error('This should never be called'));
       });
       test.save(function(err, doc) {

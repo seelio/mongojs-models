@@ -17,6 +17,35 @@ describe('lib/utils.js', function() {
     });
   });
 
+  describe('.augment()', function() {
+    it('should augment an object with methods and properties of another object', function() {
+      function Foo() { this._id = 'foo'; this._count = 0; }
+      Foo._static = function() { return 'foo'; }
+      Foo.prototype._proto = function(val) { this._val = val; this._count++; return 'foo'; }
+      Bar.prototype._old = function() { return 'foo'; }
+      Foo.prototype._arr = ['foo', 'bar'];
+      Foo.prototype._obj = {foo: 1, bar: 2};
+      function Bar() { this._id = 'bar'; }
+      Bar._static = function() { return 'bar'; }
+      Bar.prototype._proto = function(val) { this._count++; return 'bar'; }
+      Bar.prototype._new = function() { return 'bar'; }
+      Bar.prototype._arr = ['bar', 'baz'];
+      Bar.prototype._obj = {bar: 3, baz: 4};
+      utils.augment(Foo, Bar);
+      expect(Foo).to.contain.keys(['_static']);
+      expect(Foo._static()).to.equal('bar');
+      expect(Foo.prototype).to.contain.keys(['_proto', '_arr']);
+      var foo = new Foo();
+      expect(foo._proto(1)).to.equal('bar');
+      expect(foo._val).to.equal(1);
+      expect(foo._count).to.equal(2);
+      expect(foo._old()).to.equal('foo');
+      expect(foo._new()).to.equal('bar');
+      expect(foo._arr).to.deep.equal(['foo', 'bar', 'baz']);
+      expect(foo._obj).to.deep.equal({foo: 1, bar: 3, baz: 4});
+    });
+  });
+
   describe('.waterfall()', function() {
     it('should run functions in order on the same object', function(done) {
       var doc = {};

@@ -50,7 +50,7 @@ to it being saved. This allows you to modify documents before sending them to
 MongoDB. To add pre-save hooks:
 
 ```javascript
-User.preSave(function(next) {
+User.pre('save', function(next) {
   this.password = _hashPasswd(this.password);
   next();
 });
@@ -61,6 +61,42 @@ operations.
 
 Pre-save hooks are run in the order they were registered, and the changes to a
 document are cumulative.
+
+Augments
+--------
+You can augment a model with methods and properties from a different object.
+Think of augments as mixins with extend capabilities. The way this works is
+different for each attribute type:
+
+* Arrays get unioned:
+
+```javascript
+Foo._arr = ['foo', 'bar'];
+Bar._arr = ['bar', 'baz'];
+db.Model.augment(Foo, Bar);
+Foo._arr == ['foo', 'bar', 'baz'];
+```
+
+* Objects get extended:
+
+```javascript
+Foo._obj = {foo: 1, bar: 2};
+Bar._obj = {bar: 3, baz: 4};
+db.Model.augment(Foo, Bar);
+Foo._obj == {foo: 1, bar: 3, baz: 4};
+```
+
+* Functions get wrapped:
+
+```javascript
+Foo._fn = function() { this._count++; return 'foo'; };
+Bar._fn = function() { this._count++; return 'bar'; };
+db.Model.augment(Foo, Bar);
+Foo._fn() == 'bar'; // this._count == 2;
+```
+
+Everything else is just replaced. If the property doesn't exist in the original
+object, it is added. This applies for both static and prototype properties.
 
 Events
 ------
