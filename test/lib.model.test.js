@@ -147,7 +147,7 @@ describe('Model', function() {
         expect(removed).to.be.true;
         Test.findOne({_id: test._id}, function(err, doc) {
           if (err) return (err);
-          expect(doc).to.be.undefined;
+          expect(doc).to.be.not.ok;
           done();
         });
       });
