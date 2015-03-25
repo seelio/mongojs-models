@@ -11,6 +11,10 @@ describe('Model', function() {
     Test = Model('test', schema);
   });
 
+  it('should fail without schema', function() {
+    expect(Model).to.throw(Error, /Schema not defined/);
+  });
+
   it('should return same model class', function() {
     expect(Model('test')).to.equal(Test);
   });
