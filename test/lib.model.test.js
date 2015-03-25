@@ -8,7 +8,11 @@ describe('Model', function() {
   before(function() {
     // Create new Model class for `test.test`
     var schema = new Schema({foo: String, bar: Number});
-    Test = new Model('test', schema);
+    Test = Model('test', schema);
+  });
+
+  it('should return same model class', function() {
+    expect(Model('test')).to.equal(Test);
   });
 
   it('should contain static collection methods', function() {
