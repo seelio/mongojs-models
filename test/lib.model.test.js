@@ -162,6 +162,19 @@ describe('Model', function() {
         });
       });
     });
+
+    it('should validate data before saving', function(done) {
+      test.foo = 1;
+      test.bar = 'NaN';
+      Test.on('error', function(err) {
+        expect(err).to.be.an.instanceof(Error);
+      });
+      test.validate(function(err) {
+        expect(err).to.be.an.instanceof(Error);
+        done();
+        Test.removeAllListeners('error');
+      });
+    });
   });
 
   describe('events', function() {

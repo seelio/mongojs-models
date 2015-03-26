@@ -67,4 +67,22 @@ describe('lib/utils.js', function() {
       });
     });
   });
+
+  describe('.flatten()', function() {
+    var nested = {
+      a: 1,
+      b: {
+        c: 2,
+        d: {
+          e: 3,
+          f: {
+            g: 4
+          }
+        }
+      }
+    };
+    var flat = utils.flatten(nested);
+    expect(flat).to.be.ok;
+    expect(flat).to.deep.equal({'a': 1, 'b.c': 2, 'b.d.e': 3, 'b.d.f.g': 4});
+  });
 });
