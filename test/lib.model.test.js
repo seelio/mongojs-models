@@ -117,7 +117,8 @@ describe('Model', function() {
       test.save(function(err, doc) {
         if (err) return done(err);
         expect(doc).to.be.ok;
-        expect(doc).to.equal(test);
+        test._id = doc._id;
+        expect(doc).to.deep.equal(test);
         Test.findOne({_id: test._id}, function(err, doc) {
           if (err) return done(err);
           expect(doc).to.be.ok;
@@ -137,14 +138,15 @@ describe('Model', function() {
     });
 
     it('should only save fields defined in the schema', function(done) {
-      test.baz = 'FOOBARBAZ';
-      expect(test).to.contain.keys(['baz']);
-      test.save(function(err, doc) {
+      var test2 = new Test(test.toJSON());
+      test2.baz = 'FOOBARBAZ';
+      expect(test2).to.contain.keys(['baz']);
+      test2.save(function(err, doc) {
         if (err) return done(err);
         expect(doc).to.be.ok;
         expect(doc).to.contain.keys(['foo', 'bar', '_id']);
         expect(doc).to.not.contain.keys(['baz']);
-        expect(doc).to.equal(test);
+        expect(doc._id.toString()).to.equal(test2._id.toString());
         done();
       });
     });
@@ -177,7 +179,8 @@ describe('Model', function() {
 
     it('should listen to a document being saved', function(done) {
       Test.once('save', function(doc) {
-        expect(doc).to.equal(test);
+        delete doc._id;
+        expect(doc).to.deep.equal(test);
         done();
       });
       test.save(function(err) {
@@ -186,13 +189,17 @@ describe('Model', function() {
     });
 
     it('should listen to a document being removed', function(done) {
-      Test.on('remove', function(doc) {
+      Test.once('remove', function(doc) {
         expect(doc).to.equal(test);
         done();
       });
       test.remove(function(err) {
         if (err) return done(err);
       });
+    });
+
+    after(function() {
+      Test.removeAllListeners('save');
     });
   });
 
@@ -212,7 +219,8 @@ describe('Model', function() {
       });
       test.save(function(err, doc) {
         if (err) return done(err);
-        expect(doc).to.equal(test);
+        delete doc._id;
+        expect(doc).to.deep.equal(test);
         expect(doc.foo).to.equal('FOObar');
         done();
       });
