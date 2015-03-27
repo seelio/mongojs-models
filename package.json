@@ -1,6 +1,6 @@
 {
   "name": "mongojsom",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "Lightweight MongoDB object modeling using MongoJS as backend API",
   "author": {
     "name": "Victor Kareh",

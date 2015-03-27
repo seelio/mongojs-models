@@ -7,7 +7,14 @@ var Test, test, _id;
 describe('Model', function() {
   before(function() {
     // Create new Model class for `test.test`
-    var schema = new Schema({foo: String, bar: Number});
+    var schema = new Schema({
+      foo: String,
+      bar: Number,
+      nested: {
+        beep: Number,
+        boop: String
+      }
+    });
     Test = Model('test', schema);
   });
 
@@ -117,7 +124,6 @@ describe('Model', function() {
       test.save(function(err, doc) {
         if (err) return done(err);
         expect(doc).to.be.ok;
-        test._id = doc._id;
         expect(doc).to.deep.equal(test);
         Test.findOne({_id: test._id}, function(err, doc) {
           if (err) return done(err);
@@ -138,17 +144,26 @@ describe('Model', function() {
     });
 
     it('should only save fields defined in the schema', function(done) {
-      var test2 = new Test(test.toJSON());
-      test2.baz = 'FOOBARBAZ';
-      expect(test2).to.contain.keys(['baz']);
-      test2.save(function(err, doc) {
+      test.baz = 'FOOBARBAZ';
+      expect(test).to.contain.keys(['baz']);
+      test.save(function(err, doc) {
         if (err) return done(err);
         expect(doc).to.be.ok;
         expect(doc).to.contain.keys(['foo', 'bar', '_id']);
         expect(doc).to.not.contain.keys(['baz']);
-        expect(doc._id.toString()).to.equal(test2._id.toString());
+        expect(doc._id.toString()).to.equal(test._id.toString());
         done();
       });
+    });
+
+    it('should reset a document to contain only schema attributes', function() {
+      test.baz = 3;
+      test.nested = {beep: 1, boing: 2};
+      test.reset();
+      expect(test).to.contain.keys(['foo', 'bar', 'nested']);
+      expect(test).to.not.contain.keys(['baz']);
+      expect(test.nested).to.contain.keys(['beep']);
+      expect(test.nested).to.not.contain.keys(['boing']);
     });
 
     it('should remove document from the collection', function(done) {
@@ -165,14 +180,14 @@ describe('Model', function() {
 
     it('should validate data before saving', function(done) {
       test.foo = 1;
-      test.bar = 'NaN';
-      Test.on('error', function(err) {
+      Test.once('error', function(err) {
         expect(err).to.be.an.instanceof(Error);
+        expect(err.message).to.equal('`foo` has the wrong data type');
+        done();
       });
       test.validate(function(err) {
         expect(err).to.be.an.instanceof(Error);
-        done();
-        Test.removeAllListeners('error');
+        expect(err.message).to.equal('Validation failed');
       });
     });
   });
@@ -192,7 +207,6 @@ describe('Model', function() {
 
     it('should listen to a document being saved', function(done) {
       Test.once('save', function(doc) {
-        delete doc._id;
         expect(doc).to.deep.equal(test);
         done();
       });
@@ -213,6 +227,8 @@ describe('Model', function() {
 
     after(function() {
       Test.removeAllListeners('save');
+      Test.removeAllListeners('remove');
+      Test.removeAllListeners('error');
     });
   });
 
@@ -232,7 +248,6 @@ describe('Model', function() {
       });
       test.save(function(err, doc) {
         if (err) return done(err);
-        delete doc._id;
         expect(doc).to.deep.equal(test);
         expect(doc.foo).to.equal('FOObar');
         done();
@@ -244,7 +259,7 @@ describe('Model', function() {
         next(new Error('You shall not pass'));
       });
       Test.pre('save', function(next) {
-        next(new Error('This should never be called'));
+        done(new Error('This should never be called'));
       });
       test.save(function(err, doc) {
         expect(err).to.be.an.instanceof(Error);
