@@ -12,7 +12,10 @@ describe('Model', function() {
       bar: Number,
       nested: {
         beep: Number,
-        boop: String
+        boop: {
+          type: String,
+          default: 'beep'
+        }
       }
     });
     Test = Model('test', schema);
@@ -162,7 +165,8 @@ describe('Model', function() {
       test.reset();
       expect(test).to.contain.keys(['foo', 'bar', 'nested']);
       expect(test).to.not.contain.keys(['baz']);
-      expect(test.nested).to.contain.keys(['beep']);
+      expect(test.nested).to.contain.keys(['beep', 'boop']);
+      expect(test.nested.boop).to.equal('beep');
       expect(test.nested).to.not.contain.keys(['boing']);
     });
 
